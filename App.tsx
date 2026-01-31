@@ -155,45 +155,56 @@ const App: React.FC = () => {
 
   return (
     <div className={`flex h-screen overflow-hidden ${themeClasses.bg} ${themeClasses.textPrimary} transition-colors duration-500`}>
-      {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 border-r ${themeClasses.sidebar} transform transition-transform duration-300 md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-6 flex items-center gap-3 border-b border-inherit">
+      {/* Sidebar - Added flex-col to allow nav to expand and scroll */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 border-r flex flex-col ${themeClasses.sidebar} transform transition-transform duration-300 md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 flex items-center gap-3 border-b border-inherit flex-shrink-0">
           <div className="p-2 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/20"><Sparkles className="w-6 h-6 text-white" /></div>
-          <div>
-            <h1 className="font-bold text-xl tracking-tight">Magic Studio</h1>
+          <div className="overflow-hidden">
+            <h1 className="font-bold text-xl tracking-tight truncate">Magic Studio</h1>
             <p className="text-[10px] font-bold uppercase tracking-widest opacity-50">by Abi Hisan</p>
           </div>
           <button className="md:hidden ml-auto" onClick={() => setIsMobileMenuOpen(false)}><X className="w-5 h-5"/></button>
         </div>
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          <SidebarButton id="home" active={activeMenu === 'home'} label={txt.menuHome} onClick={() => setActiveMenu('home')} />
+        
+        {/* Navigation Area with active scrollbar */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
+          <SidebarButton id="home" active={activeMenu === 'home'} label={txt.menuHome} onClick={() => { setActiveMenu('home'); setIsMobileMenuOpen(false); }} />
+          
           <SectionLabel label={txt.catGeneral} />
-          <SidebarButton id="text-to-image" active={activeMenu === 'text-to-image'} label={txt.menuTxtImg} onClick={() => setActiveMenu('text-to-image')} />
-          <SidebarButton id="image-to-image" active={activeMenu === 'image-to-image'} label={txt.menuImgTrans} onClick={() => setActiveMenu('image-to-image')} />
+          <SidebarButton id="text-to-image" active={activeMenu === 'text-to-image'} label={txt.menuTxtImg} onClick={() => { setActiveMenu('text-to-image'); setIsMobileMenuOpen(false); }} />
+          <SidebarButton id="image-to-image" active={activeMenu === 'image-to-image'} label={txt.menuImgTrans} onClick={() => { setActiveMenu('image-to-image'); setIsMobileMenuOpen(false); }} />
+          
           <SectionLabel label={txt.catSpecialized} />
-          <SidebarButton id="photorealistic" active={activeMenu === 'photorealistic'} label={txt.menuPhoto} onClick={() => setActiveMenu('photorealistic')} />
-          <SidebarButton id="sticker-design" active={activeMenu === 'sticker-design'} label={txt.menuSticker} onClick={() => setActiveMenu('sticker-design')} />
-          <SidebarButton id="logo-creator" active={activeMenu === 'logo-creator'} label={txt.menuLogo} onClick={() => setActiveMenu('logo-creator')} />
+          <SidebarButton id="photorealistic" active={activeMenu === 'photorealistic'} label={txt.menuPhoto} onClick={() => { setActiveMenu('photorealistic'); setIsMobileMenuOpen(false); }} />
+          <SidebarButton id="sticker-design" active={activeMenu === 'sticker-design'} label={txt.menuSticker} onClick={() => { setActiveMenu('sticker-design'); setIsMobileMenuOpen(false); }} />
+          <SidebarButton id="logo-creator" active={activeMenu === 'logo-creator'} label={txt.menuLogo} onClick={() => { setActiveMenu('logo-creator'); setIsMobileMenuOpen(false); }} />
+          
           <SectionLabel label={txt.catAdvanced} />
-          <SidebarButton id="smart-editor" active={activeMenu === 'smart-editor'} label={txt.menuSmart} onClick={() => setActiveMenu('smart-editor')} />
-          <SidebarButton id="fashion-composite" active={activeMenu === 'fashion-composite'} label={txt.menuFashion} onClick={() => setActiveMenu('fashion-composite')} />
+          <SidebarButton id="smart-editor" active={activeMenu === 'smart-editor'} label={txt.menuSmart} onClick={() => { setActiveMenu('smart-editor'); setIsMobileMenuOpen(false); }} />
+          <SidebarButton id="fashion-composite" active={activeMenu === 'fashion-composite'} label={txt.menuFashion} onClick={() => { setActiveMenu('fashion-composite'); setIsMobileMenuOpen(false); }} />
+          
           <SectionLabel label={txt.catTools} />
-          <SidebarButton id="live-visuals" active={activeMenu === 'live-visuals'} label={txt.menuLive} onClick={() => setActiveMenu('live-visuals')} />
-          <SidebarButton id="recipe-extractor" active={activeMenu === 'recipe-extractor'} label={txt.menuRecipe} onClick={() => setActiveMenu('recipe-extractor')} />
-          <SidebarButton id="chat" active={activeMenu === 'chat'} label={txt.menuChat} onClick={() => setActiveMenu('chat')} />
+          <SidebarButton id="live-visuals" active={activeMenu === 'live-visuals'} label={txt.menuLive} onClick={() => { setActiveMenu('live-visuals'); setIsMobileMenuOpen(false); }} />
+          <SidebarButton id="recipe-extractor" active={activeMenu === 'recipe-extractor'} label={txt.menuRecipe} onClick={() => { setActiveMenu('recipe-extractor'); setIsMobileMenuOpen(false); }} />
+          <SidebarButton id="chat" active={activeMenu === 'chat'} label={txt.menuChat} onClick={() => { setActiveMenu('chat'); setIsMobileMenuOpen(false); }} />
+          
+          {/* Bottom Spacing for better reachability */}
+          <div className="h-10" />
         </nav>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col relative">
-        <header className={`h-16 flex items-center justify-between px-6 border-b ${themeClasses.sidebar} backdrop-blur-xl z-40`}>
+      <main className="flex-1 flex flex-col relative min-w-0">
+        <header className={`h-16 flex items-center justify-between px-6 border-b ${themeClasses.sidebar} backdrop-blur-xl z-40 flex-shrink-0`}>
           <div className="flex items-center gap-4">
-            <button className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}><Menu className="w-6 h-6"/></button>
-            <h2 className="font-bold">{activeMenu === 'home' ? txt.welcome : txt[`menu${activeMenu.replace(/-./g, x => x[1].toUpperCase()).replace(/^./, x => x.toUpperCase())}` as keyof typeof txt]}</h2>
+            <button className="md:hidden p-2 -ml-2 rounded-lg hover:bg-white/10" onClick={() => setIsMobileMenuOpen(true)}><Menu className="w-6 h-6"/></button>
+            <h2 className="font-bold text-sm md:text-base truncate max-w-[150px] md:max-w-none">
+              {activeMenu === 'home' ? txt.welcome : txt[`menu${activeMenu.replace(/-./g, x => x[1].toUpperCase()).replace(/^./, x => x.toUpperCase())}` as keyof typeof txt]}
+            </h2>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setLang(lang === 'en' ? 'id' : 'en')} className="p-2 rounded-lg hover:bg-white/10 transition-colors"><Languages className="w-5 h-5"/></button>
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-lg hover:bg-white/10 transition-colors">{isDarkMode ? <Sun className="w-5 h-5"/> : <Moon className="w-5 h-5"/>}</button>
+          <div className="flex items-center gap-1 md:gap-3">
+            <button onClick={() => setLang(lang === 'en' ? 'id' : 'en')} className="p-2 rounded-lg hover:bg-white/10 transition-colors" title="Change Language"><Languages className="w-5 h-5"/></button>
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-lg hover:bg-white/10 transition-colors" title="Toggle Theme">{isDarkMode ? <Sun className="w-5 h-5"/> : <Moon className="w-5 h-5"/>}</button>
           </div>
         </header>
 
@@ -231,7 +242,7 @@ const App: React.FC = () => {
           )}
         </div>
 
-        <footer className={`h-8 border-t ${themeClasses.sidebar} flex items-center px-4 overflow-hidden`}>
+        <footer className={`h-8 border-t ${themeClasses.sidebar} flex items-center px-4 overflow-hidden flex-shrink-0`}>
           <div className="animate-marquee whitespace-nowrap text-[10px] font-bold uppercase tracking-widest opacity-40">
             {txt.footerText} • MAGIC STUDIO ABI HISAN • POWERED BY GEMINI 2.5 FLASH • {txt.footerText}
           </div>
@@ -243,26 +254,26 @@ const App: React.FC = () => {
   );
 };
 
-const SectionLabel = ({ label }: { label: string }) => <div className="px-4 py-2 mt-4 text-[10px] font-bold uppercase opacity-40 tracking-widest">{label}</div>;
+const SectionLabel = ({ label }: { label: string }) => <div className="px-4 py-2 mt-4 text-[10px] font-black uppercase opacity-40 tracking-widest border-l-2 border-transparent">{label}</div>;
 
 const SidebarButton = ({ id, active, label, onClick }: any) => {
   const Icon = MENU_ICONS[id];
   return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'hover:bg-white/5 opacity-70 hover:opacity-100'}`}>
-      <Icon className="w-4 h-4"/>
-      <span className="text-sm font-semibold">{label}</span>
+    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'hover:bg-white/5 opacity-70 hover:opacity-100'}`}>
+      <Icon className={`w-4 h-4 ${active ? 'animate-pulse' : ''}`}/>
+      <span className="text-sm font-semibold truncate">{label}</span>
     </button>
   );
 };
 
 const HomeView = ({ theme, txt, onExplore }: any) => (
   <div className="max-w-5xl mx-auto space-y-12 py-12 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
-    <div className="space-y-4">
+    <div className="space-y-4 px-4">
       <div className="inline-block p-4 bg-indigo-600/10 rounded-3xl mb-4"><Sparkles className="w-12 h-12 text-indigo-500"/></div>
-      <h1 className="text-5xl md:text-7xl font-black tracking-tight">{txt.heroTitle} <br/><span className="text-indigo-500">{txt.heroSubtitle}</span></h1>
-      <p className={`text-xl ${theme.textSecondary} max-w-2xl mx-auto`}>{txt.heroDesc}</p>
+      <h1 className="text-4xl md:text-7xl font-black tracking-tight">{txt.heroTitle} <br/><span className="text-indigo-500">{txt.heroSubtitle}</span></h1>
+      <p className={`text-base md:text-xl ${theme.textSecondary} max-w-2xl mx-auto leading-relaxed`}>{txt.heroDesc}</p>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-4">
       <FeatureCard icon={Wand2} title={txt.featGen} desc={txt.featDesc1} onClick={() => onExplore('text-to-image')} theme={theme}/>
       <FeatureCard icon={Scissors} title={txt.featEdit} desc={txt.featDesc2} onClick={() => onExplore('smart-editor')} theme={theme}/>
       <FeatureCard icon={Globe} title={txt.featTool} desc={txt.featDesc3} onClick={() => onExplore('live-visuals')} theme={theme}/>
@@ -271,10 +282,10 @@ const HomeView = ({ theme, txt, onExplore }: any) => (
 );
 
 const FeatureCard = ({ icon: Icon, title, desc, onClick, theme }: any) => (
-  <button onClick={onClick} className={`p-8 rounded-[2rem] border ${theme.card} text-left hover:scale-[1.02] transition-transform group`}>
+  <button onClick={onClick} className={`p-8 rounded-[2rem] border ${theme.card} text-left hover:scale-[1.02] active:scale-95 transition-all group h-full flex flex-col`}>
     <div className="w-12 h-12 bg-indigo-600/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><Icon className="w-6 h-6"/></div>
     <h3 className="text-xl font-bold mb-2">{title}</h3>
-    <p className={`text-sm ${theme.textSecondary}`}>{desc}</p>
+    <p className={`text-sm ${theme.textSecondary} flex-1`}>{desc}</p>
   </button>
 );
 
@@ -290,12 +301,12 @@ const StudioView = ({ prompt, onPromptChange, loading, generatedImage, source1, 
         </div>
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-widest opacity-50">{txt.promptLbl}</label>
-          <textarea value={prompt} onChange={e => onPromptChange(e.target.value)} className={`w-full h-40 p-4 rounded-2xl border ${theme.input} resize-none focus:ring-2 ring-indigo-500/50 outline-none text-sm leading-relaxed`} placeholder="Describe your creative vision..."/>
+          <textarea value={prompt} onChange={e => onPromptChange(e.target.value)} className={`w-full h-40 p-4 rounded-2xl border ${theme.input} resize-none focus:ring-2 ring-indigo-500/50 outline-none text-sm leading-relaxed scrollbar-thin`} placeholder="Describe your creative vision..."/>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase opacity-50">{txt.aspectRatio}</label>
-            <select value={aspectRatio} onChange={e => onAspectRatioChange(e.target.value)} className={`w-full p-3 rounded-xl border ${theme.input} text-xs outline-none`}>
+            <select value={aspectRatio} onChange={e => onAspectRatioChange(e.target.value)} className={`w-full p-3 rounded-xl border ${theme.input} text-xs outline-none cursor-pointer hover:bg-white/5`}>
               <option value="1:1">Square 1:1</option>
               <option value="16:9">Wide 16:9</option>
               <option value="9:16">Portrait 9:16</option>
@@ -303,36 +314,36 @@ const StudioView = ({ prompt, onPromptChange, loading, generatedImage, source1, 
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase opacity-50">Engine</label>
-            <div className={`p-3 rounded-xl border ${theme.input} text-[10px] font-bold flex items-center gap-2 opacity-50`}><Zap className="w-3 h-3"/> Gemini 2.5</div>
+            <div className={`p-3 rounded-xl border ${theme.input} text-[10px] font-bold flex items-center gap-2 opacity-50 cursor-default`}><Zap className="w-3 h-3 text-indigo-500"/> Gemini 2.5</div>
           </div>
         </div>
-        <button onClick={onGenerate} disabled={loading || !prompt} className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-black shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-          {loading ? <Loader2 className="w-5 h-5 animate-spin"/> : <Sparkles className="w-5 h-5"/>}
+        <button onClick={onGenerate} disabled={loading || !prompt} className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-black shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 group">
+          {loading ? <Loader2 className="w-5 h-5 animate-spin"/> : <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform"/>}
           {source1 ? txt.btnTrans : txt.btnGen}
         </button>
       </div>
     </div>
     <div className="lg:col-span-8">
-      <div className={`aspect-[4/3] lg:aspect-auto lg:h-[70vh] rounded-[3rem] border ${theme.card} flex items-center justify-center overflow-hidden p-8 relative`}>
+      <div className={`aspect-[4/3] lg:aspect-auto lg:h-[70vh] rounded-[3rem] border ${theme.card} flex items-center justify-center overflow-hidden p-4 md:p-8 relative shadow-inner`}>
         {generatedImage ? (
           <div className="relative group w-full h-full flex items-center justify-center animate-in zoom-in-95 duration-500">
             <img src={generatedImage} className="max-w-full max-h-full rounded-2xl shadow-2xl object-contain"/>
             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => { const a = document.createElement('a'); a.href = generatedImage; a.download = 'magic.png'; a.click(); }} className="p-3 bg-white text-black rounded-full shadow-2xl hover:scale-110 transition-transform"><Download className="w-5 h-5"/></button>
+              <button onClick={() => { const a = document.createElement('a'); a.href = generatedImage; a.download = 'magic.png'; a.click(); }} className="p-3 bg-white text-black rounded-full shadow-2xl hover:scale-110 active:scale-90 transition-all"><Download className="w-5 h-5"/></button>
             </div>
           </div>
         ) : loading ? (
-          <div className="text-center space-y-6 animate-pulse">
-            <div className="w-20 h-20 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto"/>
-            <h3 className="text-2xl font-black italic">{txt.rendering}</h3>
+          <div className="text-center space-y-6 animate-pulse px-4">
+            <div className="w-20 h-20 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto shadow-lg"/>
+            <h3 className="text-2xl font-black italic tracking-widest text-indigo-500">{txt.rendering}</h3>
           </div>
         ) : error ? (
-          <div className="text-center space-y-4 max-w-xs">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto opacity-50"/>
+          <div className="text-center space-y-4 max-w-xs px-4">
+            <div className="p-4 bg-red-500/10 rounded-full inline-block"><AlertCircle className="w-12 h-12 text-red-500"/></div>
             <p className="text-red-500 font-bold">{error}</p>
           </div>
         ) : (
-          <div className="text-center opacity-20 space-y-4">
+          <div className="text-center opacity-10 space-y-4 select-none px-4">
             <ImageIcon className="w-32 h-32 mx-auto"/>
             <p className="text-3xl font-black italic uppercase tracking-tighter">{txt.ready}</p>
           </div>
@@ -346,19 +357,21 @@ const UploadSlot = ({ label, image, onUpload, onRemove, onCapture, theme, txt }:
   <div className="space-y-2">
     <label className="text-[10px] font-black uppercase tracking-widest opacity-50">{label}</label>
     {image ? (
-      <div className="relative h-40 rounded-2xl overflow-hidden border border-indigo-500/30 group">
+      <div className="relative h-40 rounded-2xl overflow-hidden border border-indigo-500/30 group shadow-md">
         <img src={image} className="w-full h-full object-cover"/>
-        <button onClick={onRemove} className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full hover:bg-red-500 transition-colors"><Trash2 className="w-4 h-4"/></button>
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <button onClick={onRemove} className="p-3 bg-red-500 text-white rounded-full hover:scale-110 active:scale-90 transition-all shadow-lg"><Trash2 className="w-5 h-5"/></button>
+        </div>
       </div>
     ) : (
       <div className="grid grid-cols-2 gap-2 h-32">
-        <label className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed ${theme.input} hover:border-indigo-500/50 cursor-pointer opacity-60 hover:opacity-100 transition-all`}>
+        <label className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed ${theme.input} hover:border-indigo-500/50 hover:bg-indigo-500/5 cursor-pointer opacity-60 hover:opacity-100 transition-all group`}>
           <input type="file" className="hidden" onChange={onUpload} accept="image/*"/>
-          <Upload className="w-5 h-5"/>
+          <Upload className="w-5 h-5 group-hover:-translate-y-1 transition-transform"/>
           <span className="text-[10px] font-bold">{txt.upload}</span>
         </label>
-        <button onClick={onCapture} className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed ${theme.input} hover:border-indigo-500/50 opacity-60 hover:opacity-100 transition-all`}>
-          <CameraIcon className="w-5 h-5"/>
+        <button onClick={onCapture} className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed ${theme.input} hover:border-indigo-500/50 hover:bg-indigo-500/5 opacity-60 hover:opacity-100 transition-all group`}>
+          <CameraIcon className="w-5 h-5 group-hover:scale-110 transition-transform"/>
           <span className="text-[10px] font-bold">{txt.takePhoto}</span>
         </button>
       </div>
@@ -367,17 +380,17 @@ const UploadSlot = ({ label, image, onUpload, onRemove, onCapture, theme, txt }:
 );
 
 const ChatView = ({ history, loading, input, onInputChange, onSubmit, theme, chatEndRef, onFileSelect, attachment, onRemoveAttachment }: any) => (
-  <div className={`h-[75vh] flex flex-col rounded-[2.5rem] border ${theme.card} overflow-hidden shadow-2xl`}>
-    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+  <div className={`h-[calc(100vh-12rem)] flex flex-col rounded-[2.5rem] border ${theme.card} overflow-hidden shadow-2xl`}>
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar">
       {history.map((msg: any, i: number) => (
-        <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+        <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
           <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${msg.role === 'user' ? 'bg-slate-700' : 'bg-indigo-600'}`}>
             {msg.role === 'user' ? <User className="w-5 h-5 text-white"/> : <Bot className="w-5 h-5 text-white"/>}
           </div>
-          <div className={`max-w-[80%] space-y-2 ${msg.role === 'user' ? 'text-right' : ''}`}>
+          <div className={`max-w-[85%] space-y-2 ${msg.role === 'user' ? 'text-right' : ''}`}>
             {msg.parts.map((p: any, j: number) => (
               <div key={j} className={`p-4 rounded-3xl inline-block text-left shadow-sm ${msg.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : `${theme.input} rounded-tl-none`}`}>
-                {p.type === 'text' ? <p className="text-sm leading-relaxed whitespace-pre-wrap">{p.text}</p> : <img src={p.url} className="max-w-sm rounded-xl"/>}
+                {p.type === 'text' ? <p className="text-sm leading-relaxed whitespace-pre-wrap">{p.text}</p> : <img src={p.url} className="max-w-full sm:max-w-sm rounded-xl"/>}
               </div>
             ))}
           </div>
@@ -386,17 +399,20 @@ const ChatView = ({ history, loading, input, onInputChange, onSubmit, theme, cha
       {loading && <div className="flex gap-4 items-center opacity-50"><div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center"><Bot className="w-5 h-5 text-white animate-bounce"/></div><div className="p-4 bg-indigo-600/10 rounded-3xl text-xs font-bold italic">Casting magic...</div></div>}
       <div ref={chatEndRef}/>
     </div>
-    <form onSubmit={onSubmit} className={`p-6 border-t ${theme.sidebar} space-y-4`}>
+    <form onSubmit={onSubmit} className={`p-4 md:p-6 border-t ${theme.sidebar} space-y-4 flex-shrink-0`}>
       {attachment && (
         <div className="flex items-center gap-2 p-2 bg-indigo-600/10 rounded-xl inline-flex border border-indigo-600/20 animate-in slide-in-from-bottom-2">
           <ImageIcon className="w-4 h-4 text-indigo-500"/>
           <span className="text-[10px] font-bold">Image ready</span>
-          <button type="button" onClick={onRemoveAttachment} className="hover:text-red-500"><X className="w-4 h-4"/></button>
+          <button type="button" onClick={onRemoveAttachment} className="hover:text-red-500 transition-colors"><X className="w-4 h-4"/></button>
         </div>
       )}
       <div className="flex gap-3">
-        <label className={`p-4 rounded-2xl ${theme.input} cursor-pointer hover:bg-white/5 transition-colors`}><input type="file" className="hidden" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if(f){ const r = new FileReader(); r.onloadend = () => onFileSelect(r.result); r.readAsDataURL(f); }}}/><Paperclip className="w-5 h-5"/></label>
-        <input value={input} onChange={e => onInputChange(e.target.value)} className={`flex-1 p-4 rounded-2xl border ${theme.input} focus:ring-2 ring-indigo-500/50 outline-none`} placeholder="Ask Magic Studio anything..."/>
+        <label className={`p-4 rounded-2xl ${theme.input} cursor-pointer hover:bg-white/5 transition-colors`} title="Attach Image">
+          <input type="file" className="hidden" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if(f){ const r = new FileReader(); r.onloadend = () => onFileSelect(r.result); r.readAsDataURL(f); }}}/>
+          <Paperclip className="w-5 h-5"/>
+        </label>
+        <input value={input} onChange={e => onInputChange(e.target.value)} className={`flex-1 p-4 rounded-2xl border ${theme.input} focus:ring-2 ring-indigo-500/50 outline-none text-sm`} placeholder="Ask Magic Studio anything..."/>
         <button type="submit" disabled={loading || (!input.trim() && !attachment)} className="p-4 rounded-2xl bg-indigo-600 text-white shadow-xl hover:shadow-indigo-600/40 active:scale-95 transition-all disabled:opacity-50"><Send className="w-5 h-5"/></button>
       </div>
     </form>
@@ -405,22 +421,22 @@ const ChatView = ({ history, loading, input, onInputChange, onSubmit, theme, cha
 
 const RecipeView = ({ input, onInputChange, loading, result, onExtract, theme, txt }: any) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-    <div className={`p-8 rounded-[2.5rem] border ${theme.card} flex flex-col gap-6 shadow-xl`}>
+    <div className={`p-8 rounded-[2.5rem] border ${theme.card} flex flex-col gap-6 shadow-xl h-fit lg:h-full`}>
       <h3 className="text-2xl font-black flex items-center gap-3"><ChefHat className="text-amber-500"/> Story to Recipe</h3>
-      <textarea value={input} onChange={e => onInputChange(e.target.value)} className={`flex-1 p-6 rounded-3xl border ${theme.input} resize-none focus:ring-2 ring-amber-500/50 outline-none leading-relaxed font-medium`} placeholder="Paste recipe text or a story about cooking..."/>
+      <textarea value={input} onChange={e => onInputChange(e.target.value)} className={`flex-1 min-h-[200px] p-6 rounded-3xl border ${theme.input} resize-none focus:ring-2 ring-amber-500/50 outline-none leading-relaxed font-medium custom-scrollbar`} placeholder="Paste recipe text or a story about cooking..."/>
       <button onClick={onExtract} disabled={loading || !input.trim()} className="w-full py-5 bg-gradient-to-r from-amber-500 to-orange-600 rounded-3xl font-black text-white shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-50">
         {loading ? <Loader2 className="w-6 h-6 animate-spin"/> : <FileJson className="w-6 h-6"/>} {txt.extract}
       </button>
     </div>
-    <div className={`p-8 rounded-[2.5rem] border ${theme.card} overflow-y-auto shadow-xl min-h-[50vh]`}>
+    <div className={`p-8 rounded-[2.5rem] border ${theme.card} overflow-y-auto shadow-xl min-h-[50vh] lg:h-full custom-scrollbar`}>
       {result ? (
         <div className="space-y-8 animate-in fade-in duration-500">
-          <div><h2 className="text-4xl font-black text-amber-500">{result.recipe_name}</h2><p className="font-bold opacity-50 uppercase text-[10px] tracking-widest mt-1">Prep Time: {result.prep_time_minutes} min</p></div>
+          <div><h2 className="text-4xl font-black text-amber-500 leading-tight">{result.recipe_name}</h2><p className="font-bold opacity-50 uppercase text-[10px] tracking-widest mt-1">Prep Time: {result.prep_time_minutes} min</p></div>
           <div className="space-y-4">
             <h4 className="text-sm font-black uppercase opacity-50 border-b border-white/10 pb-2">Ingredients</h4>
             <div className="grid grid-cols-1 gap-2">
               {result.ingredients.map((ing: any, i: number) => (
-                <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5"><span className="font-bold">{ing.name}</span><span className="text-amber-500 font-black">{ing.quantity}</span></div>
+                <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5 group hover:bg-white/10 transition-colors"><span className="font-bold">{ing.name}</span><span className="text-amber-500 font-black">{ing.quantity}</span></div>
               ))}
             </div>
           </div>
@@ -428,12 +444,12 @@ const RecipeView = ({ input, onInputChange, loading, result, onExtract, theme, t
             <h4 className="text-sm font-black uppercase opacity-50 border-b border-white/10 pb-2">Instructions</h4>
             <div className="space-y-4">
               {result.instructions.map((step: string, i: number) => (
-                <div key={i} className="flex gap-4"><div className="w-6 h-6 rounded-lg bg-amber-500 text-white font-black flex items-center justify-center text-[10px] flex-shrink-0">{i+1}</div><p className="text-sm leading-relaxed opacity-80">{step}</p></div>
+                <div key={i} className="flex gap-4 group"><div className="w-6 h-6 rounded-lg bg-amber-500 text-white font-black flex items-center justify-center text-[10px] flex-shrink-0 group-hover:scale-110 transition-transform">{i+1}</div><p className="text-sm leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">{step}</p></div>
               ))}
             </div>
           </div>
         </div>
-      ) : <div className="h-full flex flex-col items-center justify-center opacity-10"><ChefHat className="w-32 h-32 mb-4"/><p className="text-2xl font-black uppercase italic tracking-tighter">Ready to Extract</p></div>}
+      ) : <div className="h-full flex flex-col items-center justify-center opacity-10 py-20 select-none"><ChefHat className="w-32 h-32 mb-4"/><p className="text-2xl font-black uppercase italic tracking-tighter">Ready to Extract</p></div>}
     </div>
   </div>
 );
@@ -444,7 +460,7 @@ const LiveView = ({ input, onInputChange, loading, result, onGenerate, theme, tx
       <div className={`p-8 rounded-[2.5rem] border ${theme.card} space-y-6 shadow-xl`}>
         <div className="flex items-center gap-4"><div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-500 shadow-inner"><Globe className="w-8 h-8"/></div><h3 className="text-2xl font-black">Live Visualization</h3></div>
         <p className={`text-sm ${theme.textSecondary}`}>Harness Google Search to visualize current events and real-time knowledge instantly.</p>
-        <textarea value={input} onChange={e => onInputChange(e.target.value)} className={`w-full h-40 p-4 rounded-2xl border ${theme.input} focus:ring-2 ring-emerald-500/50 outline-none leading-relaxed`} placeholder="Ask about recent events, weather, or trends..."/>
+        <textarea value={input} onChange={e => onInputChange(e.target.value)} className={`w-full h-40 p-4 rounded-2xl border ${theme.input} focus:ring-2 ring-emerald-500/50 outline-none leading-relaxed text-sm`} placeholder="Ask about recent events, weather, or trends..."/>
         <button onClick={onGenerate} disabled={loading || !input.trim()} className="w-full py-5 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl font-black text-white shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-50">
           {loading ? <Loader2 className="w-6 h-6 animate-spin"/> : <Globe className="w-6 h-6"/>} {txt.visualize}
         </button>
@@ -453,13 +469,13 @@ const LiveView = ({ input, onInputChange, loading, result, onGenerate, theme, tx
     <div className="lg:col-span-7">
       <div className={`h-full min-h-[50vh] rounded-[2.5rem] border ${theme.card} overflow-hidden shadow-2xl flex flex-col bg-slate-950/20`}>
         {result ? (
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 animate-in slide-in-from-right-4 duration-500">
-            <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex-shrink-0"><img src={result.imageUrl} className="w-full h-full object-cover"/></div>
-            <div className={`p-6 rounded-3xl ${theme.input} space-y-4`}><h4 className="font-bold text-emerald-500 flex items-center gap-2"><Brain className="w-4 h-4"/> Real-time Knowledge</h4><p className="text-sm leading-relaxed whitespace-pre-wrap">{result.summary}</p></div>
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 animate-in slide-in-from-right-4 duration-500 custom-scrollbar">
+            <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex-shrink-0 group"><img src={result.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/></div>
+            <div className={`p-6 rounded-3xl ${theme.input} space-y-4 shadow-sm`}><h4 className="font-bold text-emerald-500 flex items-center gap-2"><Brain className="w-4 h-4"/> Real-time Knowledge</h4><p className="text-sm leading-relaxed whitespace-pre-wrap">{result.summary}</p></div>
           </div>
         ) : loading ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-6"><div className="w-20 h-20 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"/><p className="font-black text-xl animate-pulse italic">Scanning the globe...</p></div>
-        ) : <div className="flex-1 flex flex-col items-center justify-center opacity-10"><Globe className="w-32 h-32 mb-4"/><p className="text-2xl font-black uppercase italic">Visual Knowledge</p></div>}
+          <div className="flex-1 flex flex-col items-center justify-center gap-6 py-20"><div className="w-20 h-20 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin shadow-lg"/><p className="font-black text-xl animate-pulse italic text-emerald-500">Scanning the globe...</p></div>
+        ) : <div className="flex-1 flex flex-col items-center justify-center opacity-10 select-none py-20"><Globe className="w-32 h-32 mb-4"/><p className="text-2xl font-black uppercase italic tracking-tighter">Visual Knowledge</p></div>}
       </div>
     </div>
   </div>
