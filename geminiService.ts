@@ -1,18 +1,77 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+// Use correct imports as per @google/genai guidelines
+import { GoogleGenAI, Type, GenerateContentResponse, Blob } from "@google/genai";
 
 export class GeminiService {
   /**
-   * Generates images. Uses Gemini 2.5 Flash Image for general tasks
-   * and can be extended to Imagen 4.0 if explicitly needed.
+   * Generates a descriptive prompt based on an uploaded image and the specific menu context.
    */
-  async generateImage(prompt: string, aspectRatio: string = '1:1') {
+  async generatePromptFromImage(imageBase64: string, menuName: string, lang: string): Promise<string> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Defaulting to Gemini 2.5 Flash Image for better versatility and speed as per guidelines
-    const response = await ai.models.generateContent({
+    // Explicitly structure image part to match SDK Part type
+    const imagePart = {
+      inlineData: {
+        data: imageBase64.split(',')[1],
+        mimeType: imageBase64.split(';')[0].split(':')[1]
+      } as Blob
+    };
+
+    const textPart = {
+      text: `Analyze this image and create a short but descriptive image generation prompt. 
+             Menu Context: "${menuName}".
+             Instructions: Write a 1-2 sentence prompt in ${lang === 'id' ? 'Bahasa Indonesia' : 'English'} 
+             that describes the style, subject, and lighting for an AI generator.`
+    };
+
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: [{ role: 'user', parts: [imagePart, textPart] }],
+    });
+
+    return response.text?.trim() || "";
+  }
+
+  /**
+   * Refines an existing prompt text using the reference image and menu context.
+   */
+  async refinePrompt(currentPrompt: string, imageBase64: string | null | undefined, menuName: string, lang: string): Promise<string> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    const parts: any[] = [];
+    if (imageBase64) {
+      parts.push({
+        inlineData: {
+          data: imageBase64.split(',')[1],
+          mimeType: imageBase64.split(';')[0].split(':')[1]
+        } as Blob
+      });
+    }
+
+    parts.push({
+      text: `Enhance this prompt to be more professional and artistic: "${currentPrompt}". 
+             Context: "${menuName}".
+             Return ONLY the enhanced prompt string in ${lang === 'id' ? 'Bahasa Indonesia' : 'English'}.`
+    });
+
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: [{ role: 'user', parts }],
+    });
+
+    return response.text?.trim() || currentPrompt;
+  }
+
+  /**
+   * Generates images. Uses Gemini 2.5 Flash Image
+   */
+  async generateImage(prompt: string, aspectRatio: string = '1:1'): Promise<string> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    // Ensure the aspect ratio string matches the SDK requirements exactly
+    const response: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
-      contents: { parts: [{ text: prompt }] },
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         imageConfig: {
           aspectRatio: aspectRatio as any
@@ -32,20 +91,25 @@ export class GeminiService {
   /**
    * Transforms existing images using Gemini 2.5 Flash Image
    */
-  async transformImage(prompt: string, sourceImages: string[]) {
+  async transformImage(prompt: string, sourceImages: string[], aspectRatio: string = '1:1'): Promise<string> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const parts = sourceImages.map(img => ({
+    const parts: any[] = sourceImages.map(img => ({
       inlineData: {
         data: img.split(',')[1],
         mimeType: img.split(';')[0].split(':')[1]
-      }
+      } as Blob
     }));
 
-    parts.push({ text: prompt } as any);
+    parts.push({ text: prompt });
 
-    const response = await ai.models.generateContent({
+    const response: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
-      contents: { parts },
+      contents: [{ role: 'user', parts }],
+      config: {
+        imageConfig: {
+          aspectRatio: aspectRatio as any
+        }
+      }
     });
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
@@ -57,24 +121,14 @@ export class GeminiService {
   }
 
   /**
-   * Intelligent chat: Uses Gemini 3 for text, switches to 2.5 for image reasoning
+   * Intelligent chat using multimodal gemini-3-pro-preview
    */
   async chat(history: any[]) {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
-    // Check if any message in history contains image data
-    const hasImage = history.some(msg => 
-      msg.parts.some((p: any) => p.inlineData)
-    );
-
-    const model = hasImage ? 'gemini-2.5-flash-image' : 'gemini-3-flash-preview';
-
-    const response = await ai.models.generateContent({
-      model,
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
       contents: history,
-      config: {
-        thinkingConfig: { thinkingBudget: 0 }
-      }
+      config: { thinkingConfig: { thinkingBudget: 0 } }
     });
 
     const parts = response.candidates?.[0]?.content?.parts || [];
@@ -90,9 +144,9 @@ export class GeminiService {
    */
   async extractRecipe(text: string) {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
+    const response: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Extract recipe details from this text: ${text}`,
+      contents: [{ role: 'user', parts: [{ text: `Extract recipe details from this text: ${text}` }] }],
       config: {
         responseMimeType: 'application/json',
         responseSchema: {
@@ -124,13 +178,10 @@ export class GeminiService {
   async getLiveVisuals(prompt: string) {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Step 1: Search grounding
-    const searchRes = await ai.models.generateContent({
+    const searchRes: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Search Google for current info about: "${prompt}". Summarize and then write an image prompt starting with 'IMAGE_PROMPT: '.`,
-      config: {
-        tools: [{ googleSearch: {} }]
-      }
+      contents: [{ role: 'user', parts: [{ text: `Search Google for current info about: "${prompt}". Summarize and then write an image prompt starting with 'IMAGE_PROMPT: '.` }] }],
+      config: { tools: [{ googleSearch: {} }] }
     });
 
     const text = searchRes.text || "";
@@ -138,13 +189,12 @@ export class GeminiService {
     const summary = splitIndex > -1 ? text.substring(0, splitIndex).trim() : text;
     const imgPrompt = splitIndex > -1 ? text.substring(splitIndex + 13).trim() : prompt;
 
-    // Step 2: Visualization
     const imgUrl = await this.generateImage(imgPrompt, '16:9');
 
     return {
       summary,
       imageUrl: imgUrl,
-      grounding: searchRes.candidates?.[0]?.groundingMetadata
+      groundingMetadata: searchRes.candidates?.[0]?.groundingMetadata
     };
   }
 }
