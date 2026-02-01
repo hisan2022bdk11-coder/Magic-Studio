@@ -14,7 +14,7 @@ export class GeminiService {
       inlineData: {
         data: imageBase64.split(',')[1],
         mimeType: imageBase64.split(';')[0].split(':')[1]
-      } as Blob
+      }
     };
 
     const textPart = {
@@ -44,7 +44,7 @@ export class GeminiService {
         inlineData: {
           data: imageBase64.split(',')[1],
           mimeType: imageBase64.split(';')[0].split(':')[1]
-        } as Blob
+        }
       });
     }
 
@@ -97,7 +97,7 @@ export class GeminiService {
       inlineData: {
         data: img.split(',')[1],
         mimeType: img.split(';')[0].split(':')[1]
-      } as Blob
+      }
     }));
 
     parts.push({ text: prompt });
@@ -133,8 +133,10 @@ export class GeminiService {
 
     const parts = response.candidates?.[0]?.content?.parts || [];
     return parts.map(p => {
-      if (p.text) return { type: 'text', text: p.text };
-      if (p.inlineData) return { type: 'image', url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` };
+      // Cast the part to any to avoid issues with standard Blob vs SDK Blob types in different environments
+      const part = p as any;
+      if (part.text) return { type: 'text', text: part.text };
+      if (part.inlineData) return { type: 'image', url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` };
       return null;
     }).filter(Boolean);
   }

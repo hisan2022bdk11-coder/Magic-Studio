@@ -113,7 +113,7 @@ const App: React.FC = () => {
       { id: 'cin_cyber', label: lang === 'id' ? 'Cyberpunk' : 'Cyberpunk', prompt: 'Gaya sinematik cyberpunk, lampu neon warna-warni pink dan biru, suasana kota masa depan yang futuristik di malam hari.' },
       { id: 'cin_70s', label: lang === 'id' ? 'Vintage 70s' : 'Vintage 70s', prompt: 'Gaya sinematik vintage tahun 70-an, nuansa warna hangat butiran film lama, pakaian retro klasik, kesan nostalgia yang kuat.' },
       { id: 'cin_noir', label: lang === 'id' ? 'Film Noir' : 'Film Noir', prompt: 'Gaya sinematik film noir klasik, hitam putih kontras tinggi, bayangan tirai jendela, suasana misterius detektif.' },
-      { id: 'cin_ethereal', label: lang === 'id' ? 'Ethereal Fantasy' : 'Ethereal Fantasy', prompt: 'Gaya sinematik fantasi etereal, cahaya berkilau lembut yang magis, suasana negeri dongeng yang indah dan damai.' },
+      { id: 'cin_ethereal', label: lang === 'id' ? 'Ethereal Fantasy' : 'Ethereal Fantasy', prompt: 'Gaya sinematik fantasi etereal, cahaya berkilau lembut yang magis, suasana negeri dongeng yang indah and damai.' },
     ]},
   ];
 
@@ -258,21 +258,20 @@ const App: React.FC = () => {
       let res;
       const currentSources = sourceTab === 'single' ? (sourceImage1 ? [sourceImage1] : []) : multiImages;
       
-      const anglePrompt = CAMERA_ANGLES.find(a => a.label === cameraAngle)?.prompt || "";
+      const isPortraitMenu = activeMenu === 'photorealistic-portrait' || activeMenu === 'photorealistic';
+      const selectedAngleData = CAMERA_ANGLES.find(a => a.label === cameraAngle);
+      const anglePrompt = isPortraitMenu ? (selectedAngleData?.prompt || "") : "";
       
       let finalPrompt = prompt;
       
-      // Strict identity matching logic
-      if (activeMenu === 'photorealistic-portrait' || activeMenu === 'photorealistic') {
+      if (isPortraitMenu) {
         finalPrompt = `STRICT FACE IDENTITY: Preserve 100% of the facial identity from the reference image. Every feature (eyes, lip shape, nose structure, skin texture, eyebrows, facial hair) MUST remain identical. 
         Exceptions: Only change features if user explicitly asks for it in prompt (e.g. "make younger", "blue hair"). 
         Current User Request: ${prompt}. 
         Camera Perspective: ${anglePrompt}. 
         Technical Specs: Professional photography, 8k resolution, ultra-detailed skin textures, realistic lighting.`;
       } else if (sourceTab === 'multi' && multiImages.length > 1) {
-        finalPrompt = `GABUNG FOTO: Gabungkan identitas dari semua gambar referensi ke satu subjek. Jaga kemiripan wajah semaksimal mungkin. Deskripsi: ${prompt}. Sudut Kamera: ${anglePrompt}`;
-      } else {
-        finalPrompt = `${prompt}. Style: ${anglePrompt}`;
+        finalPrompt = `GABUNG FOTO: Gabungkan identitas dari semua gambar referensi ke satu subjek. Jaga kemiripan wajah semaksimal mungkin. Deskripsi: ${prompt}.`;
       }
 
       if (currentSources.length > 0) {
@@ -282,7 +281,6 @@ const App: React.FC = () => {
       }
       setGeneratedImage(res);
     } catch (err: any) {
-      // Enhanced Error Handling for 429
       if (err.message?.includes('429')) {
         setError(lang === 'id' ? 'Kuota API Terlampaui. Mohon tunggu beberapa menit atau hubungi Admin.' : 'API Quota Exceeded. Please wait a few minutes before trying again.');
       } else {
@@ -300,11 +298,13 @@ const App: React.FC = () => {
     if (chatAttachment) userMsg.parts.push({ type: 'image', url: chatAttachment });
     if (chatInput.trim()) userMsg.parts.push({ type: 'text', text: chatInput });
 
+    // Use a functional update to ensure we have the latest state before it's sent
     setChatHistory(prev => [...prev, userMsg]);
     setChatInput("");
     setChatAttachment(null);
     setChatLoading(true);
     try {
+      // Map history parts to the structure expected by the Gemini API
       const history = [...chatHistory, userMsg].map(msg => ({
         role: msg.role,
         parts: msg.parts.map(p => {
@@ -314,9 +314,13 @@ const App: React.FC = () => {
             const mimeTypeMatch = p.url?.match(/^data:(.*);base64,/);
             const dataStr = p.url?.split(',')[1] || "";
             const mType = mimeTypeMatch ? mimeTypeMatch[1] : 'image/png';
+            // Return an object that fits the Part interface. Cast to any to avoid browser Blob conflict.
             return {
-              inlineData: { data: dataStr, mimeType: mType } as any
-            };
+              inlineData: {
+                data: dataStr,
+                mimeType: mType
+              }
+            } as any;
           }
         })
       }));
@@ -498,6 +502,7 @@ const StudioView = ({ prompt, onPromptChange, loading, isAnalyzing, generatedIma
   };
 
   const selectedAngle = cameraAngles.find((a: any) => a.label === cameraAngle);
+  const isPortraitMenu = activeMenu === 'photorealistic' || activeMenu === 'photorealistic-portrait';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
@@ -571,81 +576,86 @@ const StudioView = ({ prompt, onPromptChange, loading, isAnalyzing, generatedIma
             )}
           </div>
 
-          {/* Specific Styles */}
-          <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#2563eb]/20 rounded-lg"><Star className="w-5 h-5 text-[#2563eb]"/></div>
-              <h3 className="text-xs font-black uppercase tracking-widest">GAYA SPESIFIK</h3>
-            </div>
-            
-            <div className="flex overflow-x-auto pb-2 gap-2 custom-scrollbar">
-              {styleCategories.map((cat: any) => (
-                <button 
-                  key={cat.id} 
-                  onClick={() => onCategoryChange(selectedCategory === cat.id ? null : cat.id)}
-                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-[9px] font-black ${selectedCategory === cat.id ? 'bg-[#2563eb] border-blue-500 text-white shadow-lg scale-105' : 'bg-slate-900/60 border-white/5 opacity-60 hover:opacity-100'}`}
-                >
-                  {cat.icon} {cat.label}
-                </button>
-              ))}
-            </div>
-
-            {selectedCategory && (
-              <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-left-2 duration-300">
-                {styleCategories.find((c: any) => c.id === selectedCategory)?.items.map((item: any) => (
+          {/* Conditional Styles - ONLY FOR PORTRAIT/PHOTO */}
+          {isPortraitMenu && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#2563eb]/20 rounded-lg"><Star className="w-5 h-5 text-[#2563eb]"/></div>
+                <h3 className="text-xs font-black uppercase tracking-widest">GAYA SPESIFIK</h3>
+              </div>
+              
+              <div className="flex overflow-x-auto pb-2 gap-2 custom-scrollbar">
+                {styleCategories.map((cat: any) => (
                   <button 
-                    key={item.id} 
-                    onClick={() => onApplyStyle(item)}
-                    className={`flex items-center justify-between p-3 rounded-xl border transition-all group ${selectedStyle === item.id ? 'bg-[#2563eb] border-[#2563eb] text-white shadow-md' : 'bg-slate-900/40 border-white/5 hover:bg-[#2563eb]/20'}`}
+                    key={cat.id} 
+                    onClick={() => onCategoryChange(selectedCategory === cat.id ? null : cat.id)}
+                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-[9px] font-black ${selectedCategory === cat.id ? 'bg-[#2563eb] border-blue-500 text-white shadow-lg scale-105' : 'bg-slate-900/60 border-white/5 opacity-60 hover:opacity-100'}`}
                   >
-                    <span className="text-[9px] font-black truncate pr-2">{item.label}</span>
-                    <ChevronRight className={`w-3 h-3 transition-transform ${selectedStyle === item.id ? 'rotate-90' : 'opacity-40 group-hover:translate-x-1'}`}/>
+                    {cat.icon} {cat.label}
                   </button>
                 ))}
               </div>
-            )}
-          </div>
 
-          {/* Camera Angle Section with Extended Labels */}
-          <div className="space-y-3 pt-2 border-t border-white/5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-600/20 rounded-lg"><Video className="w-5 h-5 text-emerald-500"/></div>
-                <h3 className="text-xs font-black uppercase tracking-widest">ANGEL CAMERA</h3>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-500">{cameraAngle}</span>
+              {selectedCategory && (
+                <div className="grid grid-cols-2 gap-2 animate-in slide-in-from-left-2 duration-300">
+                  {styleCategories.find((c: any) => c.id === selectedCategory)?.items.map((item: any) => (
+                    <button 
+                      key={item.id} 
+                      onClick={() => onApplyStyle(item)}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-all group ${selectedStyle === item.id ? 'bg-[#2563eb] border-[#2563eb] text-white shadow-md' : 'bg-slate-900/40 border-white/5 hover:bg-[#2563eb]/20'}`}
+                    >
+                      <span className="text-[9px] font-black truncate pr-2">{item.label}</span>
+                      <ChevronRight className={`w-3 h-3 transition-transform ${selectedStyle === item.id ? 'rotate-90' : 'opacity-40 group-hover:translate-x-1'}`}/>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            
-            {/* Extended Tooltip/Description for Selected Angle */}
-            <div className="p-3 bg-emerald-500/5 rounded-xl border border-emerald-500/20 flex items-start gap-3 animate-in fade-in duration-300">
-              <Info className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"/>
-              <div>
-                <p className="text-[10px] font-bold text-emerald-500 uppercase">{cameraAngle}</p>
-                <p className="text-[9px] text-gray-400 mt-1">{selectedAngle?.desc}</p>
-              </div>
-            </div>
+          )}
 
-            <div className="grid grid-cols-3 gap-2">
-              {cameraAngles.map((angle: any) => (
-                <button 
-                  key={angle.id} 
-                  onClick={() => onCameraAngleChange(angle.label)}
-                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all text-[9px] font-black ${cameraAngle === angle.label ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg' : 'bg-slate-900/60 border-white/5 opacity-60 hover:opacity-100'}`}
-                  title={angle.desc}
-                >
-                  {angle.icon}
-                  <span className="truncate">{angle.label}</span>
-                </button>
-              ))}
+          {/* Conditional Camera Angle - ONLY FOR PORTRAIT/PHOTO */}
+          {isPortraitMenu && (
+            <div className="space-y-3 pt-2 border-t border-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-600/20 rounded-lg"><Video className="w-5 h-5 text-emerald-500"/></div>
+                  <h3 className="text-xs font-black uppercase tracking-widest">ANGLE CAMERA</h3>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-500">{cameraAngle}</span>
+              </div>
+              
+              <div className="p-3 bg-emerald-500/5 rounded-xl border border-emerald-500/20 flex items-start gap-3 animate-in fade-in duration-300">
+                <Info className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"/>
+                <div>
+                  <p className="text-[10px] font-bold text-emerald-500 uppercase">{cameraAngle}</p>
+                  <p className="text-[9px] text-gray-400 mt-1">{selectedAngle?.desc}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {cameraAngles.map((angle: any) => (
+                  <button 
+                    key={angle.id} 
+                    onClick={() => onCameraAngleChange(angle.label)}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all text-[9px] font-black ${cameraAngle === angle.label ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg' : 'bg-slate-900/60 border-white/5 opacity-60 hover:opacity-100'}`}
+                    title={angle.desc}
+                  >
+                    {angle.icon}
+                    <span className="truncate">{angle.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="h-px bg-white/5 w-full"/>
 
           {/* Prompt Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-black uppercase tracking-widest opacity-50">MANTRA KREATIF</label>
+              <label className="text-[10px] font-black uppercase tracking-widest opacity-50">
+                {activeMenu === 'text-to-image' ? "ISI PROMPT ANDA" : "MANTRA KREATIF"}
+              </label>
               <button onClick={onRefine} disabled={isAnalyzing || !prompt} className="text-[9px] font-black text-[#2563eb] hover:underline flex items-center gap-1"><Sparkles className="w-3 h-3"/> PERCANTIK MANTRA</button>
             </div>
             <div className="relative">
@@ -653,7 +663,7 @@ const StudioView = ({ prompt, onPromptChange, loading, isAnalyzing, generatedIma
                 value={prompt} 
                 onChange={e => onPromptChange(e.target.value)} 
                 className={`w-full h-32 p-4 rounded-2xl border ${theme.input} resize-none focus:ring-2 ring-[#2563eb]/50 outline-none text-xs leading-relaxed scrollbar-thin transition-all ${isAnalyzing ? 'opacity-50 blur-[1px]' : ''} bg-slate-950/40`} 
-                placeholder="Deskripsikan imajinasimu di sini..."
+                placeholder={activeMenu === 'text-to-image' ? "Ketik prompt gambar yang ingin Anda buat..." : "Deskripsikan imajinasimu di sini..."}
               />
               {isAnalyzing && (
                 <div className="absolute inset-0 flex items-center justify-center bg-transparent">
@@ -708,7 +718,7 @@ const StudioView = ({ prompt, onPromptChange, loading, isAnalyzing, generatedIma
               </div>
             </div>
           ) : error ? (
-            <div className="text-center space-y-6 max-w-sm px-6">
+            <div className="text-center space-y-6 max-sm px-6">
               <div className="p-6 bg-red-500/10 rounded-full inline-block shadow-inner animate-bounce"><AlertCircle className="w-16 h-16 text-red-500"/></div>
               <div>
                 <p className="text-red-500 font-black text-xl mb-2">{error.includes('429') ? '⚠️ LIMIT API' : 'ERROR'}</p>
