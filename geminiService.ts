@@ -1,6 +1,6 @@
 
 // Use correct imports as per @google/genai guidelines
-import { GoogleGenAI, Type, GenerateContentResponse, Blob } from "@google/genai";
+import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 
 export class GeminiService {
   /**

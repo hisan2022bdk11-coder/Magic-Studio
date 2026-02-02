@@ -5,7 +5,6 @@ export type MenuId =
   | 'home' 
   | 'text-to-image' 
   | 'image-to-image' 
-  | 'photorealistic' 
   | 'photorealistic-portrait'
   | 'sticker-design' 
   | 'logo-creator' 

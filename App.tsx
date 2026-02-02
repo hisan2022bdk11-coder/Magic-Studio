@@ -12,6 +12,39 @@ import { TRANSLATIONS, MENU_ICONS } from './constants';
 import { MenuId, AppLanguage, ChatMessage, RecipeResult } from './types';
 import { gemini } from './geminiService';
 
+const SidebarButton = ({ id, active, label, onClick }: any) => {
+  const Icon = MENU_ICONS[id];
+  return (
+    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active ? 'bg-[#2563eb] text-white shadow-lg shadow-blue-600/30' : 'hover:bg-white/5 opacity-70 hover:opacity-100'}`}>
+      <Icon className={`w-4 h-4 ${active ? 'animate-pulse' : ''}`}/>
+      <span className="text-sm font-semibold truncate">{label}</span>
+    </button>
+  );
+};
+
+const HomeView = ({ theme, txt, onExplore }: any) => (
+  <div className="max-w-5xl mx-auto space-y-12 py-12 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+    <div className="space-y-4 px-4">
+      <div className="inline-block p-4 bg-blue-600/10 rounded-3xl mb-4"><Sparkles className="w-12 h-12 text-[#2563eb]"/></div>
+      <h1 className="text-4xl md:text-7xl font-black tracking-tight">{txt.heroTitle} <br/><span className="text-[#2563eb]">{txt.heroSubtitle}</span></h1>
+      <p className={`text-base md:text-xl ${theme.textSecondary} max-w-2xl mx-auto leading-relaxed`}>{txt.heroDesc}</p>
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-4">
+      <FeatureCard icon={Wand2} title={txt.featGen} desc={txt.featDesc1} onClick={() => onExplore('text-to-image')} theme={theme}/>
+      <FeatureCard icon={Scissors} title={txt.featDesc2} desc={txt.featDesc2} onClick={() => onExplore('smart-editor')} theme={theme}/>
+      <FeatureCard icon={Globe} title={txt.featTool} desc={txt.featDesc3} onClick={() => onExplore('live-visuals')} theme={theme}/>
+    </div>
+  </div>
+);
+
+const FeatureCard = ({ icon: Icon, title, desc, onClick, theme }: any) => (
+  <button onClick={onClick} className={`p-8 rounded-[2rem] border ${theme.card} text-left hover:scale-[1.02] active:scale-95 transition-all group h-full flex flex-col`}>
+    <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#2563eb] group-hover:text-white transition-colors"><Icon className="w-6 h-6"/></div>
+    <h3 className="text-xl font-bold mb-2">{title}</h3>
+    <p className={`text-sm ${theme.textSecondary} flex-1`}>{desc}</p>
+  </button>
+);
+
 const App: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<MenuId>('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -50,70 +83,70 @@ const App: React.FC = () => {
     { 
       id: 'eye', 
       label: 'Eye Level', 
-      desc: 'Sudut pandang normal dan natural.',
+      desc: lang === 'id' ? 'Sudut pandang normal dan natural.' : 'Normal and natural point of view.',
       icon: <Target className="w-3 h-3"/>, 
-      prompt: 'Kamera setinggi mata, sudut pandang natural.' 
+      prompt: 'Camera at eye level, natural point of view.' 
     },
     { 
       id: 'low', 
       label: 'Low Angle', 
-      desc: 'Memberikan kesan heroik dan dramatis.',
+      desc: lang === 'id' ? 'Memberikan kesan heroik dan dramatis.' : 'Gives a heroic and dramatic impression.',
       icon: <ChevronRight className="w-3 h-3 -rotate-45"/>, 
-      prompt: 'Sudut kamera rendah (worm-eye view), memberikan kesan heroik dan dramatis.' 
+      prompt: 'Low camera angle (worm-eye view), heroic and dramatic impression.' 
     },
     { 
       id: 'high', 
       label: 'High Angle', 
-      desc: 'Memberikan kesan artistik dan cinematic.',
+      desc: lang === 'id' ? 'Memberikan kesan artistik dan cinematic.' : 'Gives an artistic and cinematic impression.',
       icon: <ChevronRight className="w-3 h-3 rotate-45"/>, 
-      prompt: 'Sudut kamera tinggi (bird-eye view), memberikan kesan artistik dan sinematik.' 
+      prompt: 'High camera angle (bird-eye view), artistic and cinematic impression.' 
     },
     { 
       id: 'close', 
       label: 'Close-up', 
-      desc: 'Fokus pada detail wajah yang sangat tajam.',
+      desc: lang === 'id' ? 'Fokus pada detail wajah yang sangat tajam.' : 'Focus on extremely sharp facial details.',
       icon: <Maximize className="w-3 h-3"/>, 
-      prompt: 'Kamera makro sangat dekat, fokus pada detail tekstur pori-pori kulit, warna mata, dan detail bibir yang sangat tajam.' 
+      prompt: 'Macro camera, close-up focus on skin texture, eyes, and lip details.' 
     },
     { 
       id: 'profile', 
       label: 'Side Profile', 
-      desc: 'Potret wajah dari samping.',
+      desc: lang === 'id' ? 'Potret wajah dari samping.' : 'Side portrait of the face.',
       icon: <User className="w-3 h-3"/>, 
-      prompt: 'Kamera dari sudut samping 90 derajat, memperlihatkan siluet wajah dan garis rahang yang tegas.' 
+      prompt: 'Camera from 90 degree side angle, showing facial silhouette and sharp jawline.' 
     },
   ];
 
   const STYLE_CATEGORIES = [
     { id: 'wedding', label: txt.wedding, icon: <Heart className="w-4 h-4"/>, items: [
-      { id: 'wedding_lux', label: lang === 'id' ? 'Klasik Mewah' : 'Luxury Classic', prompt: 'Suasana pernikahan klasik mewah, dekorasi megah, pencahayaan kristal hangat, gaun dan jas pengantin sangat elegan.' },
-      { id: 'wedding_garden', label: lang === 'id' ? 'Outdoor Garden' : 'Outdoor Garden', prompt: 'Suasana pernikahan taman outdoor, cahaya matahari alami tembus pepohonan, dekorasi bunga segar, suasana santai dan romantis.' },
-      { id: 'wedding_trad', label: lang === 'id' ? 'Adat Tradisional' : 'Traditional Heritage', prompt: 'Suasana romantis pernikahan, pencahayaan lembut hangat, nuansa elegan dan penuh kebahagiaan. Pakaian adat pernikahan tradisional Indonesia dengan detail emas yang rumit dan latar pelaminan artistik.' },
-      { id: 'wedding_candid', label: lang === 'id' ? 'Candid Emosional' : 'Emotional Candid', prompt: 'Momen pernikahan candid emosional, ekspresi wajah bahagia yang jujur, fokus pada perasaan, pencahayaan alami yang lembut.' },
+      { id: 'wedding_lux', label: lang === 'id' ? 'Klasik Mewah' : 'Luxury Classic', prompt: 'Luxury classic wedding, grand decoration, warm crystal lighting, elegant attire.' },
+      { id: 'wedding_garden', label: lang === 'id' ? 'Outdoor Garden' : 'Outdoor Garden', prompt: 'Outdoor garden wedding, natural sunlight through trees, fresh floral decor.' },
+      { id: 'wedding_trad', label: lang === 'id' ? 'Adat Tradisional' : 'Traditional Heritage', prompt: 'Traditional Indonesian wedding, intricate gold details, artistic backdrop.' },
+      { id: 'wedding_candid', label: lang === 'id' ? 'Candid Emosional' : 'Emotional Candid', prompt: 'Emotional candid wedding moment, authentic expressions, soft lighting.' },
     ]},
     { id: 'official', label: txt.official, icon: <UserCircle className="w-4 h-4"/>, items: [
-      { id: 'off_suit', label: lang === 'id' ? 'Jas & Dasi' : 'Suit & Tie', prompt: 'Foto resmi profesional memakai jas dan dasi rapi, latar belakang polos studio, pencahayaan formal yang bersih.' },
-      { id: 'off_batik', label: lang === 'id' ? 'Batik Formal' : 'Formal Batik', prompt: 'Foto resmi memakai kemeja batik formal khas Indonesia, motif etnik yang tegas, latar belakang kantor atau studio profesional.' },
-      { id: 'off_work', label: lang === 'id' ? 'Kemeja Kerja' : 'Work Shirt', prompt: 'Foto resmi memakai kemeja kerja rapi, suasana lingkungan kerja modern, pencahayaan terang dan aura profesional.' },
-      { id: 'off_smart', label: lang === 'id' ? 'Kacamata Cerdas' : 'Smart Eyewear', prompt: 'Potret profil profesional dengan kacamata, tatapan cerdas dan fokus, latar belakang rak buku atau ruang kerja minimalis.' },
+      { id: 'off_suit', label: lang === 'id' ? 'Jas & Dasi' : 'Suit & Tie', prompt: 'Professional suit and tie, clean studio background, formal lighting.' },
+      { id: 'off_batik', label: lang === 'id' ? 'Batik Formal' : 'Formal Batik', prompt: 'Formal Indonesian batik shirt, ethnic pattern, professional studio backdrop.' },
+      { id: 'off_work', label: lang === 'id' ? 'Kemeja Kerja' : 'Work Shirt', prompt: 'Neat work shirt, modern office environment, bright professional aura.' },
+      { id: 'off_smart', label: lang === 'id' ? 'Kacamata Cerdas' : 'Smart Eyewear', prompt: 'Smart professional portrait with eyewear, intellectual gaze, minimalist workspace.' },
     ]},
     { id: 'model', label: txt.pose, icon: <CameraIcon className="w-4 h-4"/>, items: [
-      { id: 'mod_vogue', label: lang === 'id' ? 'Vogue Style' : 'Vogue Style', prompt: 'Gaya model editorial Vogue, pose dramatis high fashion, pencahayaan studio dengan kontras tinggi dan bayangan artistik.' },
-      { id: 'mod_urban', label: lang === 'id' ? 'Urban Street' : 'Urban Street', prompt: 'Gaya model urban street fashion, latar belakang perkotaan yang estetik, pakaian kasual trendi, pencahayaan jalanan yang dinamis.' },
-      { id: 'mod_bw', label: lang === 'id' ? 'B&W Artistic' : 'B&W Artistic', prompt: 'Gaya model hitam putih artistik, permainan cahaya dan bayangan yang dramatis, siluet tubuh yang elegan dan berkarakter.' },
-      { id: 'mod_avant', label: lang === 'id' ? 'Avant-Garde' : 'Avant-Garde', prompt: 'Gaya model avant-garde, pakaian eksperimental yang unik, seni tata rias dramatis, suasana latar belakang yang abstrak dan futuristik.' },
+      { id: 'mod_vogue', label: lang === 'id' ? 'Vogue Style' : 'Vogue Style', prompt: 'Vogue editorial style, high fashion pose, high contrast studio lighting.' },
+      { id: 'mod_urban', label: lang === 'id' ? 'Urban Street' : 'Urban Street', prompt: 'Urban street fashion, aesthetic city background, trendy casual wear.' },
+      { id: 'mod_bw', label: lang === 'id' ? 'B&W Artistic' : 'B&W Artistic', prompt: 'Black and white artistic style, dramatic light and shadow, elegant silhouette.' },
+      { id: 'mod_avant', label: lang === 'id' ? 'Avant-Garde' : 'Avant-Garde', prompt: 'Avant-garde fashion, unique experimental clothing, dramatic makeup.' },
     ]},
     { id: 'business', label: txt.business, icon: <Briefcase className="w-4 h-4"/>, items: [
-      { id: 'biz_space', label: lang === 'id' ? 'Ruang Kerja' : 'Workspace', prompt: 'Suasana bisnis di ruang kerja modern, elemen meja kerja dan laptop, fokus pada profesionalisme, latar belakang kantor eksekutif.' },
-      { id: 'biz_pres', label: lang === 'id' ? 'Presentasi' : 'Presentation', prompt: 'Suasana bisnis sedang memberikan presentasi, gaya kepemimpinan yang percaya diri, latar belakang ruang rapat atau konferensi.' },
-      { id: 'biz_casual', label: lang === 'id' ? 'Business Casual' : 'Business Casual', prompt: 'Gaya bisnis kasual santai, blazer tanpa dasi, suasana profesional namun nyaman di co-working space atau cafe modern.' },
-      { id: 'biz_lead', label: lang === 'id' ? 'Leader Focus' : 'Leader Focus', prompt: 'Potret fokus pemimpin bisnis masa kini, pose berwibawa, latar belakang gedung perkantoran tinggi di sore hari.' },
+      { id: 'biz_space', label: lang === 'id' ? 'Ruang Kerja' : 'Workspace', prompt: 'Modern workspace business vibe, laptop and desk elements, executive office.' },
+      { id: 'biz_pres', label: lang === 'id' ? 'Presentasi' : 'Presentation', prompt: 'Business presentation moment, confident leadership style, meeting room.' },
+      { id: 'biz_casual', label: lang === 'id' ? 'Business Casual' : 'Business Casual', prompt: 'Business casual style, blazer without tie, coworking space environment.' },
+      { id: 'biz_lead', label: lang === 'id' ? 'Leader Focus' : 'Leader Focus', prompt: 'Business leader portrait, authoritative pose, high-rise office building background.' },
     ]},
     { id: 'cinema', label: txt.cinematic, icon: <Zap className="w-4 h-4"/>, items: [
-      { id: 'cin_cyber', label: lang === 'id' ? 'Cyberpunk' : 'Cyberpunk', prompt: 'Gaya sinematik cyberpunk, lampu neon warna-warni pink dan biru, suasana kota masa depan yang futuristik di malam hari.' },
-      { id: 'cin_70s', label: lang === 'id' ? 'Vintage 70s' : 'Vintage 70s', prompt: 'Gaya sinematik vintage tahun 70-an, nuansa warna hangat butiran film lama, pakaian retro klasik, kesan nostalgia yang kuat.' },
-      { id: 'cin_noir', label: lang === 'id' ? 'Film Noir' : 'Film Noir', prompt: 'Gaya sinematik film noir klasik, hitam putih kontras tinggi, bayangan tirai jendela, suasana misterius detektif.' },
-      { id: 'cin_ethereal', label: lang === 'id' ? 'Ethereal Fantasy' : 'Ethereal Fantasy', prompt: 'Gaya sinematik fantasi etereal, cahaya berkilau lembut yang magis, suasana negeri dongeng yang indah and damai.' },
+      { id: 'cin_cyber', label: lang === 'id' ? 'Cyberpunk' : 'Cyberpunk', prompt: 'Cyberpunk cinematic style, pink and blue neon lights, futuristic city at night.' },
+      { id: 'cin_70s', label: lang === 'id' ? 'Vintage 70s' : 'Vintage 70s', prompt: '70s vintage cinematic style, warm film grain, retro classic attire.' },
+      { id: 'cin_noir', label: lang === 'id' ? 'Film Noir' : 'Film Noir', prompt: 'Film noir cinematic, high contrast B&W, window blinds shadows, mysterious vibe.' },
+      { id: 'cin_ethereal', label: lang === 'id' ? 'Ethereal Fantasy' : 'Ethereal Fantasy', prompt: 'Ethereal fantasy cinematic, magical shimmering light, dreamlike atmosphere.' },
     ]},
   ];
 
@@ -122,7 +155,6 @@ const App: React.FC = () => {
       home: 'menuHome',
       'text-to-image': 'menuTxtImg',
       'image-to-image': 'menuImgTrans',
-      'photorealistic': 'menuPhoto',
       'photorealistic-portrait': 'menuRealFace',
       'sticker-design': 'menuSticker',
       'logo-creator': 'menuLogo',
@@ -149,7 +181,6 @@ const App: React.FC = () => {
     const menuPrompts: Record<string, string> = {
       'text-to-image': txt.promptTxtImg,
       'image-to-image': txt.promptImgTrans,
-      'photorealistic': txt.promptPhoto,
       'photorealistic-portrait': txt.promptRealFace,
       'sticker-design': txt.promptSticker,
       'logo-creator': txt.promptLogo,
@@ -172,7 +203,7 @@ const App: React.FC = () => {
       const menuTitle = getMenuTitle(activeMenu);
       const initialPrompt = await gemini.generatePromptFromImage(img, menuTitle, lang);
       setPrompt(initialPrompt);
-    } catch (err: any) {
+    } catch (err: any) { // Fix: Changed type from unknown to any to resolve TS assignment issues
       console.error("Auto analysis failed", err);
     } finally {
       setIsAnalyzing(false);
@@ -258,7 +289,7 @@ const App: React.FC = () => {
       let res;
       const currentSources = sourceTab === 'single' ? (sourceImage1 ? [sourceImage1] : []) : multiImages;
       
-      const isPortraitMenu = activeMenu === 'photorealistic-portrait' || activeMenu === 'photorealistic';
+      const isPortraitMenu = activeMenu === 'photorealistic-portrait';
       const selectedAngleData = CAMERA_ANGLES.find(a => a.label === cameraAngle);
       const anglePrompt = isPortraitMenu ? (selectedAngleData?.prompt || "") : "";
       
@@ -298,13 +329,11 @@ const App: React.FC = () => {
     if (chatAttachment) userMsg.parts.push({ type: 'image', url: chatAttachment });
     if (chatInput.trim()) userMsg.parts.push({ type: 'text', text: chatInput });
 
-    // Use a functional update to ensure we have the latest state before it's sent
     setChatHistory(prev => [...prev, userMsg]);
     setChatInput("");
     setChatAttachment(null);
     setChatLoading(true);
     try {
-      // Map history parts to the structure expected by the Gemini API
       const history = [...chatHistory, userMsg].map(msg => ({
         role: msg.role,
         parts: msg.parts.map(p => {
@@ -314,7 +343,6 @@ const App: React.FC = () => {
             const mimeTypeMatch = p.url?.match(/^data:(.*);base64,/);
             const dataStr = p.url?.split(',')[1] || "";
             const mType = mimeTypeMatch ? mimeTypeMatch[1] : 'image/png';
-            // Return an object that fits the Part interface. Cast to any to avoid browser Blob conflict.
             return {
               inlineData: {
                 data: dataStr,
@@ -364,7 +392,6 @@ const App: React.FC = () => {
           <SidebarButton id="text-to-image" active={activeMenu === 'text-to-image'} label={txt.menuTxtImg} onClick={() => { setActiveMenu('text-to-image'); setIsMobileMenuOpen(false); }} />
           <SidebarButton id="image-to-image" active={activeMenu === 'image-to-image'} label={txt.menuImgTrans} onClick={() => { setActiveMenu('image-to-image'); setIsMobileMenuOpen(false); }} />
           <SectionLabel label={txt.catSpecialized} />
-          <SidebarButton id="photorealistic" active={activeMenu === 'photorealistic'} label={txt.menuPhoto} onClick={() => { setActiveMenu('photorealistic'); setIsMobileMenuOpen(false); }} />
           <SidebarButton id="photorealistic-portrait" active={activeMenu === 'photorealistic-portrait'} label={txt.menuRealFace} onClick={() => { setActiveMenu('photorealistic-portrait'); setIsMobileMenuOpen(false); }} />
           <SidebarButton id="sticker-design" active={activeMenu === 'sticker-design'} label={txt.menuSticker} onClick={() => { setActiveMenu('sticker-design'); setIsMobileMenuOpen(false); }} />
           <SidebarButton id="logo-creator" active={activeMenu === 'logo-creator'} label={txt.menuLogo} onClick={() => { setActiveMenu('logo-creator'); setIsMobileMenuOpen(false); }} />
@@ -456,53 +483,20 @@ const App: React.FC = () => {
 
 const SectionLabel = ({ label }: { label: string }) => <div className="px-4 py-2 mt-4 text-[10px] font-black uppercase opacity-40 tracking-widest border-l-2 border-transparent">{label}</div>;
 
-const SidebarButton = ({ id, active, label, onClick }: any) => {
-  const Icon = MENU_ICONS[id];
-  return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active ? 'bg-[#2563eb] text-white shadow-lg shadow-blue-600/30' : 'hover:bg-white/5 opacity-70 hover:opacity-100'}`}>
-      <Icon className={`w-4 h-4 ${active ? 'animate-pulse' : ''}`}/>
-      <span className="text-sm font-semibold truncate">{label}</span>
-    </button>
-  );
-};
-
-const HomeView = ({ theme, txt, onExplore }: any) => (
-  <div className="max-w-5xl mx-auto space-y-12 py-12 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
-    <div className="space-y-4 px-4">
-      <div className="inline-block p-4 bg-blue-600/10 rounded-3xl mb-4"><Sparkles className="w-12 h-12 text-[#2563eb]"/></div>
-      <h1 className="text-4xl md:text-7xl font-black tracking-tight">{txt.heroTitle} <br/><span className="text-[#2563eb]">{txt.heroSubtitle}</span></h1>
-      <p className={`text-base md:text-xl ${theme.textSecondary} max-w-2xl mx-auto leading-relaxed`}>{txt.heroDesc}</p>
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-4">
-      <FeatureCard icon={Wand2} title={txt.featGen} desc={txt.featDesc1} onClick={() => onExplore('text-to-image')} theme={theme}/>
-      <FeatureCard icon={Scissors} title={txt.featEdit} desc={txt.featDesc2} onClick={() => onExplore('smart-editor')} theme={theme}/>
-      <FeatureCard icon={Globe} title={txt.featTool} desc={txt.featDesc3} onClick={() => onExplore('live-visuals')} theme={theme}/>
-    </div>
-  </div>
-);
-
-const FeatureCard = ({ icon: Icon, title, desc, onClick, theme }: any) => (
-  <button onClick={onClick} className={`p-8 rounded-[2rem] border ${theme.card} text-left hover:scale-[1.02] active:scale-95 transition-all group h-full flex flex-col`}>
-    <div className="w-12 h-12 bg-blue-600/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#2563eb] group-hover:text-white transition-colors"><Icon className="w-6 h-6"/></div>
-    <h3 className="text-xl font-bold mb-2">{title}</h3>
-    <p className={`text-sm ${theme.textSecondary} flex-1`}>{desc}</p>
-  </button>
-);
-
 const StudioView = ({ prompt, onPromptChange, loading, isAnalyzing, generatedImage, source1, source2, multiImages, onUpload1, onUpload2, onRemove1, onRemove2, onRemoveMulti, onCapture1, onCapture2, onCaptureMulti, onGenerate, onRefine, onApplyStyle, aspectRatio, onAspectRatioChange, cameraAngle, onCameraAngleChange, cameraAngles, sourceTab, onTabChange, selectedCategory, onCategoryChange, selectedStyle, styleCategories, theme, txt, error, activeMenu }: any) => {
   
   const getPreviewRatioStyle = () => {
     switch(aspectRatio) {
       case '16:9': return { aspectRatio: '16/9', width: '100%', maxWidth: '100%' };
-      case '9:16': return { aspectRatio: '9/16', height: '100%', maxHeight: '100%' };
       case '3:4': return { aspectRatio: '3/4', height: '100%', maxHeight: '100%' };
       case '4:3': return { aspectRatio: '4/3', width: '100%', maxWidth: '100%' };
+      case '9:16': return { aspectRatio: '9/16', height: '100%', maxHeight: '100%' };
       default: return { aspectRatio: '1/1', width: '100%', maxWidth: '100%' };
     }
   };
 
   const selectedAngle = cameraAngles.find((a: any) => a.label === cameraAngle);
-  const isPortraitMenu = activeMenu === 'photorealistic' || activeMenu === 'photorealistic-portrait';
+  const isPortraitMenu = activeMenu === 'photorealistic-portrait';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
@@ -576,7 +570,7 @@ const StudioView = ({ prompt, onPromptChange, loading, isAnalyzing, generatedIma
             )}
           </div>
 
-          {/* Conditional Styles - ONLY FOR PORTRAIT/PHOTO */}
+          {/* Conditional Styles - ONLY FOR PORTRAIT */}
           {isPortraitMenu && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
               <div className="flex items-center gap-3">
@@ -613,7 +607,7 @@ const StudioView = ({ prompt, onPromptChange, loading, isAnalyzing, generatedIma
             </div>
           )}
 
-          {/* Conditional Camera Angle - ONLY FOR PORTRAIT/PHOTO */}
+          {/* Conditional Camera Angle - ONLY FOR PORTRAIT */}
           {isPortraitMenu && (
             <div className="space-y-3 pt-2 border-t border-white/5">
               <div className="flex items-center justify-between">
@@ -637,7 +631,7 @@ const StudioView = ({ prompt, onPromptChange, loading, isAnalyzing, generatedIma
                   <button 
                     key={angle.id} 
                     onClick={() => onCameraAngleChange(angle.label)}
-                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all text-[9px] font-black ${cameraAngle === angle.label ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg' : 'bg-slate-900/60 border-white/5 opacity-60 hover:opacity-100'}`}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all text-[9px] font-black ${cameraAngle === angle.label ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg' : 'bg-slate-900/60 border-white/5 opacity-60 text-white hover:opacity-100'}`}
                     title={angle.desc}
                   >
                     {angle.icon}
